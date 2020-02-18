@@ -41,16 +41,21 @@
     display: inline-block;
     position: relative;
     padding: 4px 8px;
-    font-size: 100%;
     line-height: 1.4;
-    color: #666;
+    color: #fff;
     border: 1px solid #666;
     cursor: pointer;
-    border-radius: 2px;
-    background: none;
+    background: #1890ff;
+    border-color: #1890ff;
     outline: none;
+    font-size: 14px;
+    width: 90px;
+    min-width: 60px;
+    min-height: 26px;
+    text-align: center;
+    border-radius: 4px;
   }
   .uploader-btn:hover {
-    background-color: rgba(0, 0, 0, .08);
+    border-color: #57a3f3;
   }
 </style>

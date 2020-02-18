@@ -28,7 +28,7 @@
       <div class="ep-uploader-file-list">
         <!--文件展示区域-->
         <span >
-          <i  class="ivu-icon ivu-icon-ios-document-outline"></i>{{file.name}} <span v-if="status === 'error'" style="color:red;">(出错了)</span>
+          <i  class="ivu-icon ivu-icon-ios-document-outline"></i>{{file.name}} <span v-show="status !== 'uploading'" :style="epStatusStyle">{{statusText}}</span>
         </span>
         <!--删除处理-->
         <i class="ivu-icon ivu-icon-ios-close ivu-upload-list-remove" style="display: inline-block;"></i>
@@ -154,6 +154,12 @@
           width: `${progress}%`,
           height: '2px',
           'background-color': this.status === 'error' ? 'rgb(230, 93, 12)' : (progress === 100 ? '#19be6b' : '#2d8cf0')
+        }
+      },
+      epStatusStyle () {
+        return {
+          'margin-left': '5px',
+          'color': this.status === 'error' ? 'rgb(230, 93, 12)' : (this.status === 'success' ? '#19be6b' : '#2d8cf0')
         }
       },
       formatedAverageSpeed () {

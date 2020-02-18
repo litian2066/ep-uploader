@@ -33,6 +33,7 @@
 <style>
   .uploader-list {
     position: relative;
+    margin-top: 2px;
   }
   .uploader-list > ul {
     list-style: none;
