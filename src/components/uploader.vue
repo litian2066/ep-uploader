@@ -61,7 +61,7 @@
         type: String,
         default: 'button'
       },
-      attr: {
+      attrs: {
         type: Object,
         default: {
           accept: '*'// 接受所有文件类型
