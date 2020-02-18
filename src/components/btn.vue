@@ -41,7 +41,7 @@
     display: inline-block;
     position: relative;
     padding: 4px 8px;
-    line-height: 1.4;
+    line-height: 26px;
     color: #fff;
     border: 1px solid #666;
     cursor: pointer;

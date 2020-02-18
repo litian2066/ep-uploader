@@ -1,5 +1,11 @@
 <template>
-  <EpUploader type="button" :attrs="attrs" :options="options" :file-status-text="statusText" class="uploader-example" ref="uploader" @file-complete="fileComplete" @complete="complete"></EpUploader>
+  <EpUploader type="button"
+              :options="options"
+              :file-status-text="statusText"
+              class="uploader-example"
+              ref="uploader"
+              @file-complete="fileComplete"
+              @complete="complete"></EpUploader>
 </template>
 
 <script>
