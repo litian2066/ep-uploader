@@ -24,6 +24,32 @@
       :extension="extension"
       :file-category="fileCategory"
       >
+      <!---自定义区域-->
+      <div class="ep-uploader-file-list">
+        <!--文件展示区域-->
+        <span >
+          <i  class="ivu-icon ivu-icon-ios-document-outline"></i>{{file.name}}
+        </span>
+        <!--删除处理-->
+        <i class="ivu-icon ivu-icon-ios-close ivu-upload-list-remove" style="display: inline-block;"></i>
+        <!--进度条-->
+        <div class="ep-uploader-progress ep-uploader-progress-normal ep-uploader-progress-show-info">
+          <div class="ep-uploader-progress-outer">
+            <div  class="ep-uploader-progress-inner">
+              <div class="ep-uploader-progress-bg" style="width: 1%; height: 2px;"></div>
+              <div class="ep-uploader-progress-success-bg" style="width: 0%; height: 2px;"></div>
+              <div class="ep-uploader-progress-error-bg" style="width: 0%; height: 2px;"></div>
+            </div>
+          </div>
+          <span class="ep-uploader-progress-text">
+            <span  class="ep-uploader-progress-text-inner">1%</span>
+          </span>
+          <span class="ep-uploader-progress-text">
+            <span  class="ep-uploader-progress-text-inner">1%</span>
+          </span>
+        </div>
+      </div>
+      <!---自定义区域结束-->
       <div class="uploader-file-progress" :class="progressingClass" :style="progressStyle"></div>
       <div class="uploader-file-info">
         <div class="uploader-file-name"><i class="uploader-file-icon" :icon="fileCategory"></i>{{file.name}}</div>
@@ -246,6 +272,7 @@
       }
     },
     mounted () {
+      console.log('.......')
       const staticProps = ['paused', 'error', 'averageSpeed', 'currentSpeed']
       const fnProps = [
         'isComplete',
@@ -307,8 +334,8 @@
 <style>
   .uploader-file {
     position: relative;
-    height: 49px;
-    line-height: 49px;
+    height: auto;
+    /*line-height: 200px;*/
     overflow: hidden;
     border-bottom: 1px solid #cdcdcd;
   }
@@ -437,5 +464,94 @@
   .uploader-file-actions .uploader-file-remove {
     display: block;
     background-position-y: -34px;
+  }
+  /* 修改过后的样式 */
+  .ep-uploader-file-list {
+    padding: 4px;
+    color: #515a6e;
+    border-radius: 4px;
+    transition: background-color .2s ease-in-out;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ep-uploader-progress {
+    display: inline-block;
+    width: 100%;
+    font-size: 12px;
+    position: relative;
+  }
+  .ep-uploader-progress-show-info .ep-uploader-progress-outer {
+    padding-right: 57px;
+    margin-right: -57px;
+  }
+  .ep-uploader-progress-outer {
+    display: inline-block;
+    width: 100%;
+    margin-right: 0;
+    padding-right: 0;
+  }
+  .ep-uploader-progress-inner {
+    display: inline-block;
+    width: 100%;
+    background-color: #f3f3f3;
+    border-radius: 100px;
+    vertical-align: middle;
+    position: relative;
+  }
+  .ep-uploader-progress-bg {
+    text-align: right;
+    border-radius: 100px;
+    background-color: #2d8cf0;
+    transition: all .2s linear;
+    position: relative;
+  }
+  .ep-uploader-progress-bg:after {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+  }
+  .ep-uploader-progress-success-bg {
+    border-radius: 100px;
+    background-color: #19be6b;
+    transition: all .2s linear;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  .ep-uploader-progress-error-bg {
+    border-radius: 100px;
+    background-color: #19be6b;
+    transition: all .2s linear;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  .ep-uploader-progress-text {
+    display: inline-block;
+    margin-left: 5px;
+    text-align: left;
+    font-size: 1em;
+    vertical-align: middle;
+    color: #808695;
+  }
+  :after, :before {
+    box-sizing: border-box;
+  }
+  .ep-uploader-file-list:hover {
+    background: #f3f3f3;
+  }
+  .ep-uploader-file-list:hover>span {
+    color: #2d8cf0;
+  }
+  .ep-uploader-file-list>span {
+    cursor: pointer;
+    transition: color .2s ease-in-out;
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
 </style>
