@@ -3,9 +3,9 @@
     <slot :files="files" :file-list="fileList" :started="started">
       <uploader-unsupport></uploader-unsupport>
       <uploader-drop>
-        <p>Drop files here to upload or</p>
-        <uploader-btn>select files</uploader-btn>
-        <uploader-btn :directory="true">select folder</uploader-btn>
+        <p>拖拽文件到此处</p>
+        <uploader-btn>文件上传</uploader-btn>
+        <uploader-btn :directory="true">文件夹上传</uploader-btn>
       </uploader-drop>
       <uploader-list></uploader-list>
     </slot>

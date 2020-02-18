@@ -28,7 +28,7 @@
       <div class="ep-uploader-file-list">
         <!--文件展示区域-->
         <span >
-          <i  class="ivu-icon ivu-icon-ios-document-outline"></i>{{file.name}}
+          <i  class="ivu-icon ivu-icon-ios-document-outline"></i>{{file.name}} <span v-if="status === 'error'" style="color:red;">(出错了)</span>
         </span>
         <!--删除处理-->
         <i class="ivu-icon ivu-icon-ios-close ivu-upload-list-remove" style="display: inline-block;"></i>
@@ -36,21 +36,23 @@
         <div class="ep-uploader-progress ep-uploader-progress-normal ep-uploader-progress-show-info">
           <div class="ep-uploader-progress-outer">
             <div  class="ep-uploader-progress-inner">
-              <div class="ep-uploader-progress-bg" style="width: 1%; height: 2px;"></div>
-              <div class="ep-uploader-progress-success-bg" style="width: 0%; height: 2px;"></div>
-              <div class="ep-uploader-progress-error-bg" style="width: 0%; height: 2px;"></div>
+              <div class="ep-uploader-progress-bg" :style="epProgressStyle"></div>
             </div>
           </div>
           <span class="ep-uploader-progress-text">
-            <span  class="ep-uploader-progress-text-inner">1%</span>
+            <span  class="ep-uploader-progress-text-inner">{{progressStyle.progress}}</span>
           </span>
-          <span class="ep-uploader-progress-text">
-            <span  class="ep-uploader-progress-text-inner">1%</span>
+          <span class="ep-uploader-progress-text ep-uploader-progress-action">
+            <span class="uploader-file-pause" @click="pause"></span>
+            <span class="uploader-file-resume" @click="resume">️</span>
+            <span class="uploader-file-retry" @click="retry"></span>
+            <span class="uploader-file-remove" @click="remove"></span>
           </span>
         </div>
       </div>
       <!---自定义区域结束-->
-      <div class="uploader-file-progress" :class="progressingClass" :style="progressStyle"></div>
+      <!--注释掉原本的代码-->
+      <!--<div class="uploader-file-progress" :class="progressingClass" :style="progressStyle"></div>
       <div class="uploader-file-info">
         <div class="uploader-file-name"><i class="uploader-file-icon" :icon="fileCategory"></i>{{file.name}}</div>
         <div class="uploader-file-size">{{formatedSize}}</div>
@@ -69,7 +71,7 @@
           <span class="uploader-file-retry" @click="retry"></span>
           <span class="uploader-file-remove" @click="remove"></span>
         </div>
-      </div>
+      </div>-->
     </slot>
   </div>
 </template>
@@ -143,6 +145,15 @@
           mozTransform: style,
           msTransform: style,
           transform: style
+        }
+      },
+      epProgressStyle () {
+        const progress = Math.floor(this.progress * 100)
+        // const style = `translateX(${Math.floor(progress - 100)}%)`
+        return {
+          width: `${progress}%`,
+          height: '2px',
+          'background-color': this.status === 'error' ? 'rgb(230, 93, 12)' : (progress === 100 ? '#19be6b' : '#2d8cf0')
         }
       },
       formatedAverageSpeed () {
@@ -355,6 +366,9 @@
   .uploader-file[status="error"] .uploader-file-progress {
     background: #ffe0e0;
   }
+  .uploader-file[status="error"] .ep-uploader-progress-inner .ep-uploader-progress-bg {
+    color: red !important;
+  }
   .uploader-file-progress {
     position: absolute;
     width: 100%;
@@ -439,7 +453,7 @@
   .uploader-file-actions {
     width: 10%;
   }
-  .uploader-file-actions > span {
+  .uploader-file-actions > span, .ep-uploader-progress-action > span {
     display: none;
     float: left;
     width: 16px;
@@ -449,19 +463,23 @@
     cursor: pointer;
     background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAABkCAYAAAD0ZHJ6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxMAAAsTAQCanBgAAARkSURBVGje7ZnfS1NRHMAH4ptPkvQSuAdBkCxD8FUQJMEULUgzy1KyyPVQ4JMiiP4Bvg6EwUQQfMmwhwRDshwaKUjDVCgoSdDNHkzTJZ6+Z37Purve8+PeTb2TM/ggu+ew89l33x8H9BBCPG7GowXTJej3+wnDvEm0JuLC04+EYWftVAUv+fiCvDUdQR1BHUEdQR3BTIygvixoQS14XgTtthLVdpNWwXRLqvQ724LplFRtyrYF0yVpFLQrKRVMh6RZ0I6kkmCqklaCqpKZH0FX56Crq9jVfdDVk0RfFrSgFsxkQVmLcdKCVrKySCrryhPEyYShhzOcrFtG0EoilfHHk1CRU5rF6ZjNZhlVOW6RnMSVyyilKies4pO41diVy8wIujoHXV3FGdMHXTtJKLFYTLhZtq4vC1rwXApCZTIqgR6g1PBMCO9DL3bMMSqBHqDU8EyISDAHiGKvWwcCQG2KgjlAFCDAOhAAap0K5gKLphk8mqJgLrCIgoxRJ4J5wKpJ7gAoMkn5EBXBPGDVJHcAFJmkfIhQcAql1oBpTvTol9gG9pm4RHAKpdaAaU706JfYBvaZuJVgPQrt4sFlnOh5MC/p3lmJYD0K7eLBZZzoeTAv6d5ZnuAYHjpgEOnk5F0ufhG6v1ggOIaHDhhEOjl5l4tfhO4vthLcwAMrFNvLJO5vEwhu4IEViu1lEve3WQmyoihQFBzG/V0CQVYUBYqCw7i/SxTBcpsRbFeIYLnNCLZbCY5b5KAnxRwct8hBj9McZFVMW0ihRNBuFdMWUigRlFaxuQ9WWYjRMTiIe5z0wSoLMToGB3GPsA9aTZIJoB+nRgBnM1tzOkkmgH6cGgGczWzNpzqLx3n/aULJJgezeNw07oxQySbVywKjBOgFRnDs+VEsx8FlgVEC9AIjOPb8KJYjvSzoG7UW1IJaUAtqQS14toLNM5fN5APdwBJA8G83Pk/aK/rgzVvXzeQD3cASQPBvNz5P2ssTzAaGUIrHEO6zI5gNDKEUjyHcxxWkh4Ylcowwk1QQpIeGJXKMMJO0EgwqyjGCioJBJvDrxRMSuVOTJEXfbz1/bHwWtBL0yoQehK6RucgE+bGzanzulQh6E3IgQV+xpc8kcrfuSO7eTfJ3ZYmQw0Oy9azVKOk1C/bJ5D5F38YPeLfx0rjWJxHsS0SqsSYuxySjj5qO5Oj7xQWy2VBtFOwzCy6ryH3YfE3uh64Y1xckgstJPydEjkkeHv07Iy4Xaao15+KCWTBx6M/db+T9xivSErqaJDdzXI6yLRE8Vgg0coex/SPJvT0SbWu0KpZtbgSpCH3NRt7I5OxHkObc6heU+/M/J5vrpBFM5GBLqCQux14COXs5CNXK5OjPGm1tSMrJSOMNYQ4mVTGV/L6zTL7+DovkbFUxbSW0Wo05l8hJWsU+cRWfSh+Mt5Lb1ck/J1TvVsdDaR/MiEni+llsdZuZp62EViu+96bpNjNPWwmtVnzvFd5m9IVVC54x/wA7gNvqFG9vXQAAAABJRU5ErkJggg==") no-repeat 0 0;
   }
-  .uploader-file-actions > span:hover {
+  .ep-uploader-progress-action > span {
+    margin-top: 0px;
+  }
+
+  .uploader-file-actions > span:hover, ep-uploader-progress-action > span:hover {
     background-position-x: -21px;
   }
-  .uploader-file-actions .uploader-file-pause {
+  .uploader-file-actions .uploader-file-pause, .ep-uploader-progress-action .uploader-file-pause {
     background-position-y: 0;
   }
-  .uploader-file-actions .uploader-file-resume {
+  .uploader-file-actions .uploader-file-resume, .ep-uploader-progress-action .uploader-file-resume {
     background-position-y: -17px;
   }
-  .uploader-file-actions .uploader-file-retry {
+  .uploader-file-actions .uploader-file-retry, .ep-uploader-progress-action .uploader-file-retry {
     background-position-y: -53px;
   }
-  .uploader-file-actions .uploader-file-remove {
+  .uploader-file-actions .uploader-file-remove, .ep-uploader-progress-action .uploader-file-remove {
     display: block;
     background-position-y: -34px;
   }
@@ -483,8 +501,8 @@
     position: relative;
   }
   .ep-uploader-progress-show-info .ep-uploader-progress-outer {
-    padding-right: 57px;
-    margin-right: -57px;
+    padding-right: 110px;
+    margin-right: -110px;
   }
   .ep-uploader-progress-outer {
     display: inline-block;

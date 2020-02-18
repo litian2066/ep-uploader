@@ -7,7 +7,7 @@
     data () {
       return {
         options: {
-          target: '//localhost:3000/upload', // '//jsonplaceholder.typicode.com/posts/',
+          target: '//localhost:8089/boot/uploader/chunk', // '//jsonplaceholder.typicode.com/posts/',
           testChunks: false
         },
         attrs: {
