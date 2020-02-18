@@ -22,7 +22,7 @@
   import UploaderFiles from './files.vue'
   import UploaderFile from './file.vue'
 
-  const COMPONENT_NAME = 'EpUploader'
+  const COMPONENT_NAME = 'uploader'
   const FILE_ADDED_EVENT = 'fileAdded'
   const FILES_ADDED_EVENT = 'filesAdded'
   const UPLOAD_START_EVENT = 'uploadStart'
