@@ -1,6 +1,6 @@
 <template>
   <label class="uploader-btn" ref="btn" v-show="support">
-    <slot></slot>
+    <slot :customized="customized"></slot>
   </label>
 </template>
 
@@ -26,6 +26,9 @@
         default () {
           return {}
         }
+      },
+      customized: {
+        type: Boolean
       }
     },
     mounted () {

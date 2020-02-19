@@ -3,7 +3,7 @@
     <slot :file-list="fileList">
       <ul>
         <li v-for="file in fileList" :key="file.id">
-          <uploader-file :file="file" :list="true"></uploader-file>
+          <uploader-file :file="file" :list="true" :msg="msg"></uploader-file>
         </li>
       </ul>
     </slot>
@@ -19,6 +19,11 @@
   export default {
     name: COMPONENT_NAME,
     mixins: [uploaderMixin],
+    props: {
+      msg: {
+        type: Object
+      }
+    },
     computed: {
       fileList () {
         return this.uploader.fileList

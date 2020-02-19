@@ -1,5 +1,5 @@
 <template>
-  <div class="uploader-drop" :class="dropClass" ref="drop" v-show="support">
+  <div class="uploader-drop" :class="dropClass" ref="drop" v-show="support" :attrs="attrs">
     <slot></slot>
   </div>
 </template>
@@ -12,6 +12,14 @@
   export default {
     name: COMPONENT_NAME,
     mixins: [uploaderMixin, supportMixin],
+    props: {
+      attrs: {
+        type: Object,
+        default () {
+          return {}
+        }
+      }
+    },
     data () {
       return {
         dropClass: ''

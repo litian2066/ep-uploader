@@ -5,19 +5,25 @@
               class="uploader-example"
               ref="uploader"
               @file-complete="fileComplete"
-              @complete="complete"></EpUploader>
+              @file-success="fileSuccess"
+              @complete="complete"
+              :attrs="attrs"
+              :msg="msg"
+              ></EpUploader>
 </template>
 
 <script>
+  const baseUrl = 'http://localhost:8030'
   export default {
     data () {
       return {
         options: {
           target: '//localhost:8089/boot/uploader/chunk', // '//jsonplaceholder.typicode.com/posts/',
+          // target: baseUrl + '/core-api/eemp/v1/uploader',
           testChunks: false
         },
         attrs: {
-          accept: 'image/*'
+          accept: '*'
         },
         statusText: {
           success: '成功了',
@@ -25,6 +31,10 @@
           uploading: '上传中',
           paused: '暂停中',
           waiting: '等待中'
+        },
+        msg: {
+          code: 100,
+          msg: '1'
         }
       }
     },
@@ -34,6 +44,13 @@
       },
       fileComplete () {
         console.log('file complete', arguments)
+      },
+      fileSuccess (rootFile, file, message, chunk) {
+        let mes = JSON.parse(message)
+        if (mes.code === 500) {
+          this.msg.code = mes.code
+          this.msg.msg = mes.message
+        }
       }
     },
     mounted () {

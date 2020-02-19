@@ -1,13 +1,18 @@
 <template>
   <div class="uploader">
-    <slot :files="files" :file-list="fileList" :started="started" :type="type" :attrs="attrs">
+    <slot :files="files"
+          :file-list="fileList"
+          :started="started"
+          :type="type"
+          :class="targetClass"
+          >
       <uploader-unsupport></uploader-unsupport>
-      <uploader-drop v-if="type === 'drag'">
+      <uploader-drop v-if="type === 'drag'" :attrs="attrs">
         <p>拖拽文件到此处</p>
       </uploader-drop>
-      <uploader-btn v-if="type === 'button'">文件上传</uploader-btn>
+      <uploader-btn v-if="type === 'button'" :attrs="attrs">文件上传</uploader-btn>
       <uploader-btn v-if="type === 'directory'" :directory="true">文件夹上传</uploader-btn>
-      <uploader-list></uploader-list>
+      <uploader-list :msg="msg"></uploader-list>
     </slot>
   </div>
 </template>
@@ -63,8 +68,23 @@
       },
       attrs: {
         type: Object,
-        default: {
-          accept: '*'// 接受所有文件类型
+        default: function () {
+          return {
+            accept: '*'
+          }
+        }
+      },
+      targetClass: {
+        type: String,
+        default: ''
+      },
+      msg: {
+        type: Object,
+        default: function () {
+          return {
+            code: 200,
+            msg: ''
+          }
         }
       }
     },

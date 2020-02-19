@@ -1,5 +1,5 @@
 <template>
-  <div class="uploader-file" :status="status">
+  <div class="uploader-file" :status="status" :msg="msg">
     <slot
       :file="file"
       :list="list"
@@ -25,18 +25,24 @@
       :file-category="fileCategory"
       >
       <!---自定义区域-->
-      <div class="ep-uploader-file-list">
+      <div class="ep-uploader-file-list" :class="progressingClass">
         <!--文件展示区域-->
         <span >
-          <i  class="ivu-icon ivu-icon-ios-document-outline"></i>{{file.name}} <span v-show="status !== 'uploading'" :style="epStatusStyle">{{statusText}}</span>
+          <i  class="ivu-icon" :class="format(file)"></i>
+          <span class="ep-uploader-file-name" :attr="file.name">{{file.name}}</span>
+          <span v-show="status === 'uploading'" style="margin-left: 5px;">
+            <span class="">{{formatedAverageSpeed}}</span>
+            <span class="">{{formatedTimeRemaining}}</span>
+          </span>
+          <span v-show="status === 'error' || status === 'paused'" :style="epStatusStyle">{{statusText}}</span>
         </span>
         <!--删除处理-->
-        <i class="ivu-icon ivu-icon-ios-close ivu-upload-list-remove" style="display: inline-block;"></i>
+        <i class="ivu-icon ivu-icon-ios-close ivu-upload-list-remove" @click="remove"></i>
         <!--进度条-->
         <div class="ep-uploader-progress ep-uploader-progress-normal ep-uploader-progress-show-info">
           <div class="ep-uploader-progress-outer">
             <div  class="ep-uploader-progress-inner">
-              <div class="ep-uploader-progress-bg" :style="epProgressStyle"></div>
+              <div class="ep-uploader-progress-bg" :class="epUploaderProgressStatus" :style="epProgressStyle"></div>
             </div>
           </div>
           <span class="ep-uploader-progress-text">
@@ -51,27 +57,6 @@
         </div>
       </div>
       <!---自定义区域结束-->
-      <!--注释掉原本的代码-->
-      <!--<div class="uploader-file-progress" :class="progressingClass" :style="progressStyle"></div>
-      <div class="uploader-file-info">
-        <div class="uploader-file-name"><i class="uploader-file-icon" :icon="fileCategory"></i>{{file.name}}</div>
-        <div class="uploader-file-size">{{formatedSize}}</div>
-        <div class="uploader-file-meta"></div>
-        <div class="uploader-file-status">
-          <span v-show="status !== 'uploading'">{{statusText}}</span>
-          <span v-show="status === 'uploading'">
-            <span>{{progressStyle.progress}}</span>
-            <em>{{formatedAverageSpeed}}</em>
-            <i>{{formatedTimeRemaining}}</i>
-          </span>
-        </div>
-        <div class="uploader-file-actions">
-          <span class="uploader-file-pause" @click="pause"></span>
-          <span class="uploader-file-resume" @click="resume">️</span>
-          <span class="uploader-file-retry" @click="retry"></span>
-          <span class="uploader-file-remove" @click="remove"></span>
-        </div>
-      </div>-->
     </slot>
   </div>
 </template>
@@ -82,6 +67,8 @@
   import { secondsToStr } from '../common/utils'
 
   const COMPONENT_NAME = 'uploader-file'
+  // 文件小图标前缀
+  const prefixCls = 'ivu-icon'
 
   export default {
     name: COMPONENT_NAME,
@@ -95,6 +82,9 @@
       list: {
         type: Boolean,
         default: false
+      },
+      msg: {
+        type: Object
       }
     },
     data () {
@@ -113,7 +103,9 @@
         timeRemaining: 0,
         type: '',
         extension: '',
-        progressingClass: ''
+        progressingClass: '',
+        epUploaderProgressStatus: '', // 进度条样式
+        iconType: '' // 文件小图标样式，默认演示文件
       }
     },
     computed: {
@@ -149,11 +141,8 @@
       },
       epProgressStyle () {
         const progress = Math.floor(this.progress * 100)
-        // const style = `translateX(${Math.floor(progress - 100)}%)`
         return {
-          width: `${progress}%`,
-          height: '2px',
-          'background-color': this.status === 'error' ? 'rgb(230, 93, 12)' : (progress === 100 ? '#19be6b' : '#2d8cf0')
+          width: `${progress}%`
         }
       },
       epStatusStyle () {
@@ -217,6 +206,13 @@
           clearTimeout(this.tid)
           this.progressingClass = ''
         }
+        if (newStatus === 'success') {
+          this.epUploaderProgressStatus = 'ep-uploader-progress-success-bg'
+        } else if (newStatus === 'error') {
+          this.epUploaderProgressStatus = 'ep-uploader-progress-error-bg'
+        } else {
+          this.epUploaderProgressStatus = ''
+        }
       }
     },
     methods: {
@@ -269,6 +265,11 @@
         this._actionCheck()
       },
       _fileSuccess (rootFile, file, message) {
+        if (this.msg.code === 500) {
+          this._fileError(rootFile, file, message)
+          console.error(this.msg.msg)
+          return
+        }
         if (rootFile) {
           this.processResponse(message)
         }
@@ -277,7 +278,7 @@
         this.isComplete = true
         this.isUploading = false
       },
-      _fileComplete () {
+      _fileComplete (rootFile) {
         this._fileSuccess()
       },
       _fileError (rootFile, file, message) {
@@ -286,10 +287,36 @@
         this.error = true
         this.isComplete = false
         this.isUploading = false
+      },
+      // 通过文件后缀名判断小图标样式，此项依赖于iview
+      format (file) {
+        const format = file.name.split('.').pop().toLocaleLowerCase() || ''
+        let type = 'ios-document-outline'
+        if (['gif', 'jpg', 'jpeg', 'png', 'bmp', 'webp'].indexOf(format) > -1) {
+          type = 'ios-image'
+        }
+        if (['mp4', 'm3u8', 'rmvb', 'avi', 'swf', '3gp', 'mkv', 'flv'].indexOf(format) > -1) {
+          type = 'ios-film'
+        }
+        if (['mp3', 'wav', 'wma', 'ogg', 'aac', 'flac'].indexOf(format) > -1) {
+          type = 'ios-musical-notes'
+        }
+        if (['doc', 'txt', 'docx', 'pages', 'epub', 'pdf'].indexOf(format) > -1) {
+          type = 'md-document'
+        }
+        if (['numbers', 'csv', 'xls', 'xlsx'].indexOf(format) > -1) {
+          type = 'ios-stats'
+        }
+        if (['keynote', 'ppt', 'pptx'].indexOf(format) > -1) {
+          type = 'ios-videocam'
+        }
+        return `${prefixCls}` + type
+      },
+      _isEmpty (obj) {
+        return obj === null || obj === undefined || obj === ''
       }
     },
     mounted () {
-      console.log('.......')
       const staticProps = ['paused', 'error', 'averageSpeed', 'currentSpeed']
       const fnProps = [
         'isComplete',
@@ -470,7 +497,7 @@
     background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAABkCAYAAAD0ZHJ6AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxMAAAsTAQCanBgAAARkSURBVGje7ZnfS1NRHMAH4ptPkvQSuAdBkCxD8FUQJMEULUgzy1KyyPVQ4JMiiP4Bvg6EwUQQfMmwhwRDshwaKUjDVCgoSdDNHkzTJZ6+Z37Purve8+PeTb2TM/ggu+ew89l33x8H9BBCPG7GowXTJej3+wnDvEm0JuLC04+EYWftVAUv+fiCvDUdQR1BHUEdQR3BTIygvixoQS14XgTtthLVdpNWwXRLqvQ724LplFRtyrYF0yVpFLQrKRVMh6RZ0I6kkmCqklaCqpKZH0FX56Crq9jVfdDVk0RfFrSgFsxkQVmLcdKCVrKySCrryhPEyYShhzOcrFtG0EoilfHHk1CRU5rF6ZjNZhlVOW6RnMSVyyilKies4pO41diVy8wIujoHXV3FGdMHXTtJKLFYTLhZtq4vC1rwXApCZTIqgR6g1PBMCO9DL3bMMSqBHqDU8EyISDAHiGKvWwcCQG2KgjlAFCDAOhAAap0K5gKLphk8mqJgLrCIgoxRJ4J5wKpJ7gAoMkn5EBXBPGDVJHcAFJmkfIhQcAql1oBpTvTol9gG9pm4RHAKpdaAaU706JfYBvaZuJVgPQrt4sFlnOh5MC/p3lmJYD0K7eLBZZzoeTAv6d5ZnuAYHjpgEOnk5F0ufhG6v1ggOIaHDhhEOjl5l4tfhO4vthLcwAMrFNvLJO5vEwhu4IEViu1lEve3WQmyoihQFBzG/V0CQVYUBYqCw7i/SxTBcpsRbFeIYLnNCLZbCY5b5KAnxRwct8hBj9McZFVMW0ihRNBuFdMWUigRlFaxuQ9WWYjRMTiIe5z0wSoLMToGB3GPsA9aTZIJoB+nRgBnM1tzOkkmgH6cGgGczWzNpzqLx3n/aULJJgezeNw07oxQySbVywKjBOgFRnDs+VEsx8FlgVEC9AIjOPb8KJYjvSzoG7UW1IJaUAtqQS14toLNM5fN5APdwBJA8G83Pk/aK/rgzVvXzeQD3cASQPBvNz5P2ssTzAaGUIrHEO6zI5gNDKEUjyHcxxWkh4Ylcowwk1QQpIeGJXKMMJO0EgwqyjGCioJBJvDrxRMSuVOTJEXfbz1/bHwWtBL0yoQehK6RucgE+bGzanzulQh6E3IgQV+xpc8kcrfuSO7eTfJ3ZYmQw0Oy9azVKOk1C/bJ5D5F38YPeLfx0rjWJxHsS0SqsSYuxySjj5qO5Oj7xQWy2VBtFOwzCy6ryH3YfE3uh64Y1xckgstJPydEjkkeHv07Iy4Xaao15+KCWTBx6M/db+T9xivSErqaJDdzXI6yLRE8Vgg0coex/SPJvT0SbWu0KpZtbgSpCH3NRt7I5OxHkObc6heU+/M/J5vrpBFM5GBLqCQux14COXs5CNXK5OjPGm1tSMrJSOMNYQ4mVTGV/L6zTL7+DovkbFUxbSW0Wo05l8hJWsU+cRWfSh+Mt5Lb1ck/J1TvVsdDaR/MiEni+llsdZuZp62EViu+96bpNjNPWwmtVnzvFd5m9IVVC54x/wA7gNvqFG9vXQAAAABJRU5ErkJggg==") no-repeat 0 0;
   }
   .ep-uploader-progress-action > span {
-    margin-top: 0px;
+    margin-top: -4px;
   }
 
   .uploader-file-actions > span:hover, ep-uploader-progress-action > span:hover {
@@ -530,8 +557,9 @@
     background-color: #2d8cf0;
     transition: all .2s linear;
     position: relative;
+    height: 3px;
   }
-  .ep-uploader-progress-bg:after {
+  .ep-uploader-progress-bg:after, .ep-uploader-progress-success-bg:after, .ep-uploader-progress-error-bg:after {
     content: '';
     display: inline-block;
     height: 100%;
@@ -544,14 +572,16 @@
     position: absolute;
     top: 0;
     left: 0;
+    height: 3px;
   }
   .ep-uploader-progress-error-bg {
     border-radius: 100px;
-    background-color: #19be6b;
+    background-color: rgb(230, 93, 12);
     transition: all .2s linear;
     position: absolute;
     top: 0;
     left: 0;
+    height: 3px;
   }
   .ep-uploader-progress-text {
     display: inline-block;
@@ -573,6 +603,32 @@
   .ep-uploader-file-list>span {
     cursor: pointer;
     transition: color .2s ease-in-out;
+  }
+  .ivu-upload-list-remove {
+    opacity: 0;
+    font-size: 18px;
+    cursor: pointer;
+    float: right;
+    margin-right: 4px;
+    color: #999;
+    transition: all .2s ease;
+  }
+  .ivu-icon {
+    display: inline-block;
+    font-family: Ionicons;
+    speak: none;
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    text-transform: none;
+    text-rendering: optimizeLegibility;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    vertical-align: -.125em;
+    text-align: center;
+  }
+  .ep-uploader-file-name {
   }
   * {
     box-sizing: border-box;
